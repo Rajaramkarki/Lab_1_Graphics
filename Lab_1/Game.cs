@@ -14,6 +14,9 @@ namespace Lab_1
 {
     public class Game : GameWindow
     {
+        int circleSides = 250; // number of sides of the circle polygon
+
+
         private int vertexbufferObject;
         private int shaderProgramObject;
         private int vertexArrayObject;
@@ -29,6 +32,57 @@ namespace Lab_1
         {
             base.OnUpdateFrame(args);
         }
+
+        void DrawCircle(float centerX, float centerY,float radius, int circleSides, ref float[] vertices)
+        {
+            float angleIncrement = (float)(2.0f * Math.PI / circleSides);
+            float currentAngle = 0.0f;
+
+            int originalLength = vertices.Length;
+            Array.Resize(ref vertices, originalLength + circleSides * 3);
+
+            for (int i = 0; i < circleSides; i++)
+            {
+                float x = centerX + (float)(radius * Math.Cos(currentAngle));
+                float y = centerY + (float)(radius * Math.Sin(currentAngle));
+                vertices[originalLength + i * 3] = x;
+                vertices[originalLength + i * 3 + 1] = y;
+                vertices[originalLength + i * 3 + 2] = 0.0f;
+                currentAngle += angleIncrement;
+            }
+        }
+
+        void DrawCrescent(float centerX, float centerY, float radius, int circleSides, ref float[] vertices)
+        {
+            float angleIncrement = (float)(Math.PI / circleSides);
+            float currentAngle = 0.0f;
+
+            int originalLength = vertices.Length;
+            Array.Resize(ref vertices, originalLength + circleSides * 2*3);
+
+            for (int i = 0; i < circleSides; i++)
+            {
+                float x = centerX + (float)(radius * Math.Cos(currentAngle));
+                float y = centerY + (float)(radius * Math.Sin(currentAngle));
+                vertices[originalLength + i * 3] = x;
+                vertices[originalLength + i * 3 + 1] = y;
+                vertices[originalLength + i * 3 + 2] = 0.0f;
+                currentAngle += angleIncrement;
+            }
+
+            // Mirror the circle horizontally to create the crescent shape
+            for (int i = 0; i < circleSides - 1; i++)
+            {
+                float x = centerX - (float)(radius * Math.Cos(currentAngle));
+                float y = centerY + (float)(radius * Math.Sin(currentAngle));
+                vertices[originalLength + circleSides * 3 + (circleSides - i - 1) * 3] = x;
+                vertices[originalLength + circleSides * 3 + (circleSides - i - 1) * 3 + 1] = y;
+                vertices[originalLength + circleSides * 3 + (circleSides - i - 1) * 3 + 2] = 0.0f;
+                currentAngle -= angleIncrement;
+            }
+        }
+
+
 
         protected override void OnLoad()
         {
@@ -57,6 +111,9 @@ namespace Lab_1
                 0.38f, 0.03f, 0.0f       //bottom right
 
             };
+
+            DrawCircle(-0.2f, -0.25f, 0.07f, 250, ref vertices);
+            DrawCrescent(-0.22f, 0.23f, 0.07f, 250, ref vertices);
 
             this.vertexbufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, this.vertexbufferObject);
@@ -126,8 +183,8 @@ namespace Lab_1
             GL.DetachShader(this.shaderProgramObject, vertexShaderObject);
             GL.DetachShader(this.shaderProgramObject, pixelShaderObject);
 
-            GL.DeleteShader(vertexShaderObject);//Check this place
-            GL.DeleteShader(pixelShaderObject);//relook
+            GL.DeleteShader(vertexShaderObject);
+            GL.DeleteShader(pixelShaderObject);
 
             base.OnLoad();
         }
@@ -135,9 +192,9 @@ namespace Lab_1
         protected override void OnUnload()
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.DeleteBuffer(this.vertexbufferObject);//check this in case
+            GL.DeleteBuffer(this.vertexbufferObject);
 
-            GL.UseProgram(0);//check this too
+            GL.UseProgram(0);
             GL.DeleteProgram(this.shaderProgramObject);
 
 
@@ -149,19 +206,19 @@ namespace Lab_1
             base.OnResize(e);
         }
 
-        public float[] TransformVertex(float[] arr, float x, float y)
-        {
-            float[] final_vertices = new float[arr.Length];
+        //public float[] TransformVertex(float[] arr, float x, float y)
+        //{
+        //    float[] final_vertices = new float[arr.Length];
 
-            for (int i =0; i<arr.Length; i= i+3)
-            {
-                final_vertices[i] = arr[i] + x;
-                final_vertices[i + 1] = arr[i + 1] + y;
-                final_vertices[i + 2] = 0;
-            }
+        //    for (int i =0; i<arr.Length; i= i+3)
+        //    {
+        //        final_vertices[i] = arr[i] + x;
+        //        final_vertices[i + 1] = arr[i + 1] + y;
+        //        final_vertices[i + 2] = 0;
+        //    }
 
-            return final_vertices;
-        }
+        //    return final_vertices;
+        //}
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
@@ -170,28 +227,10 @@ namespace Lab_1
 
             GL.UseProgram(this.shaderProgramObject);
             int uniformLocations = GL.GetUniformLocation(this.shaderProgramObject, "vColor");
-            GL.Uniform4(uniformLocations, 0.078f, 0.114f, 0.420f, 1.0f);
-
-
-
-            ////////checking
-            //float[] array = {-1.0f, 0.4f, 0.0f,
-            //                 -1.0f, -0.5f, 0.0f,
-            //                 0.0f, -0.5f, 0.0f};
-
-
-            ////checking for the vertices transform
-            //float[] final_vertices = TransformVertex(array, 1f, 1f);
-            //foreach (int i in final_vertices)
-            //{
-            //    Console.WriteLine("{0}", i);
-            //}
-            /////checking finish
-
-
+            
             GL.BindVertexArray(this.vertexArrayObject);
 
-
+            GL.Uniform4(uniformLocations, 0.078f, 0.114f, 0.420f, 1.0f);
             ///for outer two triangles that are blue
             GL.DrawArrays(PrimitiveType.Triangles, 0, 3); // left triangle
             GL.DrawArrays(PrimitiveType.Triangles, 3, 3); // right triangle
@@ -201,10 +240,13 @@ namespace Lab_1
             GL.DrawArrays(PrimitiveType.Triangles, 6, 3);
             GL.DrawArrays(PrimitiveType.Triangles, 9, 3);
 
-
-
             ///for the sun and moon
-            GL.Uniform4(uniformLocations, 1.0f, 1.0f, 0.0f, 1.0f); // yellow
+            GL.Uniform4(uniformLocations, 1.0f, 1.0f, 1.0f, 1.0f); // white
+            GL.DrawArrays(PrimitiveType.TriangleFan, 12, this.circleSides);
+
+            
+            GL.Uniform4(uniformLocations, 1.0f, 1.0f, 1.0f, 1.0f); // white
+            GL.DrawArrays(PrimitiveType.TriangleFan, 387, circleSides );
 
 
             this.Context.SwapBuffers();
