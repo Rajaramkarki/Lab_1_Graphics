@@ -1,6 +1,5 @@
 # Lab_1_Graphics
-Graphics Lab for Nepal Flag
-C# to draw the flag of Nepal using OpenTK library for OpenGL
+A C# script with OpenTK to draw a flag of Nepal using OpenGL Graphics API.
 
 The output is as follows
 
