@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Lab 1 Report.docx
+*.pdf
+/Lab 2 Report.docx
