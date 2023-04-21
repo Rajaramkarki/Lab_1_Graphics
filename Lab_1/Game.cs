@@ -12,6 +12,8 @@ using System.Xml.Linq;
 
 namespace Lab_1
 {
+
+
     public class Game : GameWindow
     {
         int circleSides = 250; // number of sides of the circle polygon
