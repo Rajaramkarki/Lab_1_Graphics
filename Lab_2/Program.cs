@@ -106,10 +106,11 @@ namespace Lab_2
 
         protected override void OnLoad()
         {
-            GL.ClearColor(new Color4(1f, 1f, 1f, 1f));
+            GL.ClearColor(new Color4(0.0f, 0.5f, 0.5f, 1.0f));
 
             float[] vertices = new float[20];
-            lineDDA(900, 500, 200, 200, ref vertices);
+            //lineDDA(200, 200, 1000, 1000, ref vertices);
+            lineBresenham(400, 300, 900, 1000, ref vertices);
 
             this.vertexbufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, this.vertexbufferObject);
