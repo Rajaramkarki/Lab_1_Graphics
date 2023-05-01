@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
 using OpenTK.Mathematics;
@@ -7,16 +6,14 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
 
-namespace Lab_2
+namespace Lab_4
 {
-
     public class Game : GameWindow
     {
-
         private int vertexbufferObject;
         private int shaderProgramObject;
         private int vertexArrayObject;
-        
+
 
         public Game()
             : base(GameWindowSettings.Default, NativeWindowSettings.Default)
@@ -29,84 +26,80 @@ namespace Lab_2
             base.OnUpdateFrame(args);
         }
 
-        public void lineBresenham(int x, int y, int x2, int y2, ref float[] vertices)
-        {
-            int w = x2 - x;
-            int h = y2 - y;
-            int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
-            if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
-            if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
-            if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
-            int longest = Math.Abs(w);
-            int shortest = Math.Abs(h);
-            if (!(longest > shortest))
-            {
-                longest = Math.Abs(h);
-                shortest = Math.Abs(w);
-                if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
-                dx2 = 0;
-            }
-            int numerator = longest >> 1;
-            int index = 0;
-            for (int i = 0; i <= longest; i++)
-            {
-                if (index >= vertices.Length)
-                {
-                    Array.Resize(ref vertices, vertices.Length + 2);
-                }
-                vertices[index] = x;
-                vertices[index + 1] = y;
-                index += 2;
-
-                numerator += shortest;
-                if (!(numerator < longest))
-                {
-                    numerator -= longest;
-                    x += dx1;
-                    y += dy1;
-                }
-                else
-                {
-                    x += dx2;
-                    y += dy2;
-                }
-            }
-        }
-
-        public void lineDDA(int x1, int y1, int x2, int y2, ref float[] vertices)
-        {
-            int dx = x2 - x1;
-            int dy = y2 - y1;
-
-            int steps = Math.Max(Math.Abs(dx), Math.Abs(dy));
-
-            float xIncrement = (float)dx / (float)steps;
-            float yIncrement = (float)dy / (float)steps;
-
-            Array.Resize(ref vertices, (steps + 1) * 2);
-
-            float x = x1;
-            float y = y1;
-
-            for (int i = 0; i <= steps; i++)
-            {
-                int index = i * 2;
-                vertices[index] = x;
-                vertices[index + 1] = y;
-
-                x += xIncrement;
-                y += yIncrement;
-            }
-        }
-
-
         protected override void OnLoad()
         {
-            GL.ClearColor(new Color4(0.0f, 0.5f, 0.5f, 1.0f));
+            GL.ClearColor(new Color4(1f, 1f, 1f, 1f));
 
-            float[] vertices = new float[20];
-            //lineDDA(200, 200, 1000, 1000, ref vertices);
-            lineBresenham(400, 300, 900, 1000, ref vertices);
+            float[] vertices = new float[]
+            {
+                0.8f, 0.8f, 1f, // top
+                0.2f, 0.8f, 1f, // bottom left
+                0.8f, 0.2f, 1f, // bottom right
+            };
+
+            // 2D Translation
+            float[][] translationMatrix = new float[][] 
+            {   
+                new float[] { 1.0f, 0.0f, -0.5f }, 
+                new float[] { 0.0f, 1.0f, -0.5f }, 
+                new float[] { 0.0f, 0.0f, 1.0f } 
+            };
+            float[] translatedVertices = transformVertices(vertices, translationMatrix);
+
+            // 2D Rotation
+            float[][] rotationMatrix = new float[][]
+            {
+                new float[] {(float)Math.Cos(-45.0f), (float) -Math.Sin(-45.0f), 0f },
+                new float[] {(float) Math.Sin(-45.0f),(float) Math.Cos(-45.0f), 0f },
+                new float[] { 0f, 0f, 1f },
+            };
+            float[] rotatedVertices = transformVertices(vertices, rotationMatrix);
+
+            // 2D Scaling
+            float[][] scalingMatrix = new float[][]
+            {
+                new float[] { 1.7f, 0f, 0f },
+                new float[] { 0f, 1.7f, 0f },
+                new float[] { 0f, 0f, 1f },
+            };
+            float[] scaledVertices = transformVertices(vertices, scalingMatrix);
+
+            // 2D Reflection
+            float[][] reflectionMatrix = new float[][]
+            {
+                new float[] { 1f, 0f, 0f },
+                new float[] { 0f, -1f, 0f },
+                new float[] { 0f, 0f, 1f },
+            };
+            float[] reflectedVertices = transformVertices(vertices, reflectionMatrix);
+
+            // 2D Shearing
+            float[][] shearingMatrix = new float[][]
+            {
+                new float[] { 1f, 0.5f, 0f },
+                new float[] { 0f, 1f, 0f },
+                new float[] { 0f, 0f, 1f },
+            };
+            float[] shearedVertices = transformVertices(vertices, shearingMatrix);
+
+            // Helper function to transform vertices using a transformation matrix
+             float[] transformVertices(float[] vertices, float[][] transformationMatrix)
+            {
+                float[] transformedVertices = new float[vertices.Length];
+                for (int i = 0; i < vertices.Length; i += 3)
+                {
+                    float x = vertices[i];
+                    float y = vertices[i + 1];
+                    float w = vertices[i + 2];
+                    float tx = transformationMatrix[0][0] * x + transformationMatrix[0][1] * y + transformationMatrix[0][2] * w;
+                    float ty = transformationMatrix[1][0] * x + transformationMatrix[1][1] * y + transformationMatrix[1][2] * w;
+                    float tw = transformationMatrix[2][0] * x + transformationMatrix[2][1] * y + transformationMatrix[2][2] * w;
+                    transformedVertices[i] = tx;
+                    transformedVertices[i + 1] = ty;
+                    transformedVertices[i + 2] = tw;
+                }
+                return transformedVertices;
+            }
 
             this.vertexbufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, this.vertexbufferObject);
@@ -117,7 +110,7 @@ namespace Lab_2
             GL.BindVertexArray(this.vertexArrayObject);
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, this.vertexbufferObject);
-            GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
 
             GL.BindVertexArray(0);
@@ -125,15 +118,12 @@ namespace Lab_2
             string vertexShaderCode =
                 @"
                  #version 330 core
-                 
-                 uniform vec2 ViewportSize;
+
                  layout (location=0) in vec3 aPosition;
                  
                  void main(){
-                    
-                    float nx = aPosition.x / ViewportSize.x * 2f - 1f;
-                    float ny = aPosition.y / ViewportSize.y * 2f - 1f;
-                    gl_Position = vec4(nx, ny, 0f, 1f);
+                 
+                    gl_Position = vec4(aPosition, 1.0f);
 
                  }";
 
@@ -182,14 +172,6 @@ namespace Lab_2
             GL.DeleteShader(vertexShaderObject);
             GL.DeleteShader(pixelShaderObject);
 
-            int[] viewport = new int[4];
-            GL.GetInteger(GetPName.Viewport, viewport);
-
-            GL.UseProgram(this.shaderProgramObject);
-            int viewportSizeUniformLocation = GL.GetUniformLocation(this.shaderProgramObject, "ViewportSize");
-            GL.Uniform2(viewportSizeUniformLocation, (float)viewport[2], (float)viewport[3]);
-            GL.UseProgram(0);
-
             base.OnLoad();
         }
 
@@ -200,7 +182,6 @@ namespace Lab_2
 
             GL.UseProgram(0);
             GL.DeleteProgram(this.shaderProgramObject);
-
 
             base.OnUnload();
         }
@@ -220,8 +201,9 @@ namespace Lab_2
 
             GL.BindVertexArray(this.vertexArrayObject);
 
-            GL.Uniform4(uniformLocations, 0f, 0f, 0f, 1.0f);
-            GL.DrawArrays(PrimitiveType.Points, 0, 2000);
+            GL.Uniform4(uniformLocations, 0.078f, 0.114f, 0.420f, 1.0f);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 3); 
+
 
             this.Context.SwapBuffers();
             base.OnRenderFrame(args);

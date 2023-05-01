@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
-using System.Xml.Linq;
-using System.Drawing;
+
 
 namespace Lab_3
 {
@@ -38,7 +33,6 @@ namespace Lab_3
             int x = radius;
             int y = 0;
             int decisionOver2 = 1 - x;
-
             List<Vector2> points = new List<Vector2>();
 
             while (y <= x)
@@ -63,9 +57,6 @@ namespace Lab_3
                     decisionOver2 += 2 * (y - x) + 1;
                 }
             }
-
-
-
             // Resize vertices array to hold all the points
             Array.Resize(ref vertices, points.Count * 2);
 
@@ -78,7 +69,7 @@ namespace Lab_3
         }
 
 
-        public void DrawEllipse(int x0, int y0, int a, int b, ref float[] vertices)
+        public void ellipseMidPoint(int x0, int y0, int a, int b, ref float[] vertices)
         {
             int sqrA = a * a;
             int sqrB = b * b;
@@ -135,21 +126,34 @@ namespace Lab_3
                     dy -= twoSqrA;
                     error += dy;
                 }
+
+                if (y == 0)
+                {
+                    while (x <= a)
+                    {
+                        vertices[index++] = x0 + x;
+                        vertices[index++] = y0;
+
+                        vertices[index++] = x0 - x;
+                        vertices[index++] = y0;
+
+                        x++;
+                    }
+                }
             }
 
             // Resize the array to fit all the generated vertices
             Array.Resize(ref vertices, index);
         }
 
-
-
         protected override void OnLoad()
         {
             GL.ClearColor(new Color4(0.0f, 0.5f, 0.5f, 1.0f));
 
             float[] vertices = new float[20];
-            //circleMidPoint(500, 500, 100, ref vertices);
-            circleMidPoint(500, 500, 300, ref vertices);
+
+            circleMidPoint(600, 600, 300, ref vertices);
+            //ellipseMidPoint(500, 500, 300, 400, ref vertices);
 
             this.vertexbufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, this.vertexbufferObject);
