@@ -167,11 +167,10 @@ namespace Lab_3
                 150f, 350f, 1f,
 
                 //for line
-                600f, 600, 1f,
+                100f, 600, 1f,
                 850f, 850f, 1f,
             };
 
-            //ellipseMidPoint(500, 500, 300, 400, ref vertices);
 
             clipLineCohenSutherland(vertices);
 
